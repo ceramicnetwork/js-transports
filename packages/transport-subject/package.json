@@ -1,0 +1,29 @@
+{
+  "name": "@ceramicnetwork/transport-subject",
+  "version": "0.1.0",
+  "author": "Ceramic Studio",
+  "license": "(Apache-2.0 OR MIT)",
+  "main": "dist/index.js",
+  "module": "dist/transport-subject.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build --tsconfig tsconfig.build.json",
+    "test": "tsdx test",
+    "lint": "tsdx lint src test --fix",
+    "prepublish": "npm run build"
+  },
+  "dependencies": {
+    "rxjs": "^6.6.6"
+  },
+  "devDependencies": {
+    "tslib": "^2.1.0"
+  }
+}
