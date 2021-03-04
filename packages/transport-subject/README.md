@@ -1,5 +1,7 @@
 # TransportSubject
 
+Message-based communication transport as a [RxJS Subject](https://rxjs.dev/api/index/class/Subject)
+
 ## Installation
 
 ```sh

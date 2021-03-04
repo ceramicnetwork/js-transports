@@ -11,11 +11,20 @@ import type {
 import type { Subscription } from 'rxjs'
 import { filter, first, mergeMap } from 'rxjs/operators'
 
+// Requests out / responses in
+export type RPCClientTransport<Methods extends RPCMethods> = TransportSubject<
+  RPCResponse<Methods, keyof Methods>,
+  RPCRequest<Methods, keyof Methods>
+>
+
+// Requests in / responses out
+export type RPCServerTransport<Methods extends RPCMethods> = TransportSubject<
+  RPCRequest<Methods, keyof Methods>,
+  RPCResponse<Methods, keyof Methods>
+>
+
 export function serve<Context, Methods extends RPCMethods>(
-  transport: TransportSubject<
-    RPCRequest<Methods, keyof Methods>,
-    RPCResponse<Methods, keyof Methods>
-  >,
+  transport: RPCServerTransport<Methods>,
   context: Context,
   methods: HandlerMethods<Context, Methods>,
   options?: HandlerOptions<Context, Methods>
@@ -31,10 +40,7 @@ export function serve<Context, Methods extends RPCMethods>(
 }
 
 export function createSendRequest<Methods extends RPCMethods>(
-  transport: TransportSubject<
-    RPCResponse<Methods, keyof Methods>,
-    RPCRequest<Methods, keyof Methods>
-  >
+  transport: RPCClientTransport<Methods>
 ): SendRequestFunc<Methods> {
   return async function send<K extends keyof Methods>(
     req: RPCRequest<Methods, K>
@@ -45,10 +51,7 @@ export function createSendRequest<Methods extends RPCMethods>(
 }
 
 export function createClientClass<Methods extends RPCMethods>(
-  transport: TransportSubject<
-    RPCResponse<Methods, keyof Methods>,
-    RPCRequest<Methods, keyof Methods>
-  >
+  transport: RPCClientTransport<Methods>
 ): new () => RPCClient<Methods> {
   const send = createSendRequest(transport)
   return class extends RPCClient<Methods> {
@@ -59,10 +62,7 @@ export function createClientClass<Methods extends RPCMethods>(
 }
 
 export function createClient<Methods extends RPCMethods>(
-  transport: TransportSubject<
-    RPCResponse<Methods, keyof Methods>,
-    RPCRequest<Methods, keyof Methods>
-  >
+  transport: RPCClientTransport<Methods>
 ): RPCClient<Methods> {
   const send = createSendRequest(transport)
   return new RPCClient<Methods>({ send })

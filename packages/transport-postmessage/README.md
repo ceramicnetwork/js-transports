@@ -1,5 +1,7 @@
 # postMessage transport
 
+Transport using [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
+
 ## Installation
 
 ```sh
