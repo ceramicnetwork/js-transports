@@ -1,5 +1,7 @@
 # TransportSubject
 
+Message-based communication transport as a [RxJS Subject](https://rxjs.dev/api/index/class/Subject)
+
 ## Installation
 
 ```sh
@@ -31,6 +33,32 @@ transport.subscribe((message) => {
 })
 transport.next({ type: 'pong' })
 ```
+
+## API
+
+### TransportSubject class
+
+Extends [RxJS Subject class](https://rxjs.dev/api/index/class/Subject)
+
+**Type parameters**
+
+1. `MsgIn`: the type of the messages coming in from the `source`
+1. `MsgOut = MsgIn`: the type of the messages going out to the `sink`
+
+#### new TransportSubject()
+
+**Arguments**
+
+1. [`source: Observable<MsgIn>`](https://rxjs.dev/api/index/class/Observable)
+1. [`sink: Observer<MsgOut>`](https://rxjs.dev/api/index/interface/Observer)
+
+#### .next()
+
+**Arguments**
+
+1. `message: MsgOut`
+
+**Returns** `void`
 
 ## License
 
