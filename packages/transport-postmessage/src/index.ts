@@ -43,14 +43,12 @@ export function createOriginFilter<Event extends MessageEvent>(
   return (event: Event) => allowedOrigin.includes(event.origin)
 }
 
-export function createCrossOriginObservable<MessageData>(
+export function createMessageObservable(
   target: PostMessageTarget,
-  allowedOrigin: string | Array<string>
-): Observable<MessageData> {
-  return fromEvent<MessageEvent>(target, 'message').pipe(
-    filter(createOriginFilter(allowedOrigin)),
-    map((event) => event.data as MessageData)
-  )
+  allowedOrigin?: string | Array<string>
+): Observable<MessageEvent> {
+  const source = fromEvent<MessageEvent>(target, 'message')
+  return allowedOrigin ? source.pipe(filter(createOriginFilter(allowedOrigin))) : source
 }
 
 export function createPostMessageObserver<MessageData>(
@@ -74,9 +72,9 @@ export class PostMessageTransport<MsgIn, MsgOut = MsgIn> extends TransportSubjec
     to: PostMessageTarget = from,
     { allowedOrigin, postMessageArguments }: PostMessageTransportOptions = {}
   ) {
-    const source = allowedOrigin
-      ? createCrossOriginObservable<MsgIn>(from, allowedOrigin)
-      : fromEvent<MessageEvent>(from, 'message').pipe(map((event) => event.data as MsgIn))
+    const source = createMessageObservable(from, allowedOrigin).pipe(
+      map((event) => event.data as MsgIn)
+    )
 
     const sink = postMessageArguments
       ? createPostMessageObserver(to, ...postMessageArguments)

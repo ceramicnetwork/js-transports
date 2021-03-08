@@ -17,8 +17,7 @@ type Methods = {
   foo: { result: string }
 }
 
-const server = serveCrossOrigin<Methods>({
-  target: window, // EventTarget receiving message events
+const server = serveCrossOrigin<Methods>(window, {
   allowedOrigin: ['https://foo.bar', 'http://localhost'], // Allow messages from these origins
   ownOrigin: 'http://localhost', // Server messages will be sent using this origin
   methods: {
@@ -32,24 +31,44 @@ server.unsubscribe()
 
 ## Types
 
+### HandledMessage
+
+Uses [`RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods) and [`RPCResponse`](https://github.com/ceramicnetwork/js-rpc-utils#rpcresponse)
+
+```ts
+type HandledMessage<Methods extends RPCMethods> = {
+  message: MessageEvent
+  response: RPCResponse<Methods, keyof Methods> | null
+}
+```
+
+### ServerOptions
+
+Uses [`RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods), [`HandlerMethods`](https://github.com/ceramicnetwork/js-rpc-utils#handlermethods) and [`HandlerOptions`](https://github.com/ceramicnetwork/js-rpc-utils#handleroptions)
+
+```ts
+type ServerOptions<Methods extends RPCMethods> = HandlerOptions<MessageEvent, Methods> & {
+  methods: HandlerMethods<MessageEvent, Methods>
+}
+```
+
 ### ServeCrossOriginOptions
 
 Uses [`RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods), [`HandlerMethods`](https://github.com/ceramicnetwork/js-rpc-utils#handlermethods) and [`HandlerOptions`](https://github.com/ceramicnetwork/js-rpc-utils#handleroptions)
 
 ```ts
 type ServeCrossOriginOptions<Methods extends RPCMethods> = HandlerOptions<MessageEvent, Methods> & {
-  target: PostMessageTarget
   methods: HandlerMethods<MessageEvent, Methods>
-  allowedOrigin: string | Array<string>
   ownOrigin: string
+  allowedOrigin?: string | Array<string>
 }
 ```
 
 ## APIs
 
-### serve()
+### serveCrossOrigin()
 
-Receives requests and sends responses to the same `target`
+Receives requests and sends responses back to the received `message.source`, optionally filtering incoming requests `message.origin`
 
 **Type parameters**
 
@@ -58,14 +77,13 @@ Receives requests and sends responses to the same `target`
 **Arguments**
 
 1. `target: PostMessageTarget`
-1. [`methods: HandlerMethods<null, Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#handlermethods)
-1. [`options?: HandlerOptions<null, Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#handleroptions)
+1. [`options: ServeCrossOriginOptions<Methods>`](#servecrossoriginoptions)
 
 **Returns** [`Subscription`](https://rxjs.dev/api/index/class/Subscription)
 
-### serveCrossOrigin()
+### serveSameOrigin()
 
-Receives requests on the provided `target` and sends responses back to the received `message.source`
+Receives requests and sends responses on the provided `target`
 
 **Type parameters**
 
@@ -73,7 +91,8 @@ Receives requests on the provided `target` and sends responses back to the recei
 
 **Arguments**
 
-1. [`options: ServeCrossOriginOptions<Methods>`](#servercrossoriginoptions)
+1. `target: PostMessageTarget`
+1. [`options: ServerOptions<null, Methods>`](#serveroptions)
 
 **Returns** [`Subscription`](https://rxjs.dev/api/index/class/Subscription)
 

@@ -1,60 +1,75 @@
 import { serve as serveTransport } from '@ceramicnetwork/rpc-transport'
-import { PostMessageTransport, createOriginFilter } from '@ceramicnetwork/transport-postmessage'
+import {
+  PostMessageTransport,
+  createMessageObservable,
+} from '@ceramicnetwork/transport-postmessage'
 import type { PostMessageTarget } from '@ceramicnetwork/transport-postmessage'
 import { createHandler } from 'rpc-utils'
 import type { HandlerMethods, HandlerOptions, RPCMethods, RPCRequest, RPCResponse } from 'rpc-utils'
-import { fromEvent } from 'rxjs'
-import type { Subscription } from 'rxjs'
+import type { Observable, Subscription } from 'rxjs'
 import { filter, mergeMap, tap } from 'rxjs/operators'
-
-export function serve<Methods extends RPCMethods>(
-  target: PostMessageTarget,
-  methods: HandlerMethods<null, Methods>,
-  options?: HandlerOptions<null, Methods>
-): Subscription {
-  const transport = new PostMessageTransport<
-    RPCRequest<Methods, keyof Methods>,
-    RPCResponse<Methods, keyof Methods>
-  >(target)
-  return serveTransport<null, Methods>(transport, null, methods, options)
-}
 
 export type HandledMessage<Methods extends RPCMethods> = {
   message: MessageEvent
   response: RPCResponse<Methods, keyof Methods> | null
 }
 
+export type ServerOptions<Context, Methods extends RPCMethods> = HandlerOptions<
+  Context,
+  Methods
+> & {
+  methods: HandlerMethods<Context, Methods>
+}
+
+export type CrossOriginServerOptions<Methods extends RPCMethods> = ServerOptions<
+  MessageEvent,
+  Methods
+> & {
+  ownOrigin: string
+}
+
+export function createCrossOriginServer<Methods extends RPCMethods>(
+  source: Observable<MessageEvent>,
+  { methods, ownOrigin, ...options }: CrossOriginServerOptions<Methods>
+): Observable<HandledMessage<Methods>> {
+  const handleRequest = createHandler(methods, options)
+  return source.pipe(
+    mergeMap(
+      async (message): Promise<HandledMessage<Methods>> => {
+        return { message, response: await handleRequest(message, message.data) }
+      }
+    ),
+    filter((handled) => handled.message.source != null && handled.response != null),
+    tap((handled) => {
+      ;(handled.message.source as Window).postMessage(handled.response, ownOrigin)
+    })
+  )
+}
+
 export type ServeCrossOriginOptions<Methods extends RPCMethods> = HandlerOptions<
   MessageEvent,
   Methods
 > & {
-  target: PostMessageTarget
   methods: HandlerMethods<MessageEvent, Methods>
-  allowedOrigin: string | Array<string>
   ownOrigin: string
+  allowedOrigin?: string | Array<string>
 }
 
-export function serveCrossOrigin<Methods extends RPCMethods>({
-  target,
-  methods,
-  allowedOrigin,
-  ownOrigin,
-  ...options
-}: ServeCrossOriginOptions<Methods>): Subscription {
-  const handleRequest = createHandler(methods, options)
+export function serveCrossOrigin<Methods extends RPCMethods>(
+  target: PostMessageTarget,
+  { allowedOrigin, ...options }: ServeCrossOriginOptions<Methods>
+): Subscription {
+  const source = createMessageObservable(target, allowedOrigin)
+  return createCrossOriginServer(source, options).subscribe()
+}
 
-  return fromEvent<MessageEvent>(target, 'message')
-    .pipe(
-      filter(createOriginFilter(allowedOrigin)),
-      mergeMap(
-        async (message): Promise<HandledMessage<Methods>> => {
-          return { message, response: await handleRequest(message, message.data) }
-        }
-      ),
-      filter((handled) => handled.message.source != null && handled.response != null),
-      tap((handled) => {
-        ;(handled.message.source as Window).postMessage(handled.response, ownOrigin)
-      })
-    )
-    .subscribe()
+export function serveSameOrigin<Methods extends RPCMethods>(
+  target: PostMessageTarget,
+  { methods, ...options }: ServerOptions<null, Methods>
+): Subscription {
+  const transport = new PostMessageTransport<
+    RPCRequest<Methods, keyof Methods>,
+    RPCResponse<Methods, keyof Methods>
+  >(target)
+  return serveTransport<null, Methods>(transport, null, methods, options)
 }

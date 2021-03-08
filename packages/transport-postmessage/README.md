@@ -105,18 +105,14 @@ type PostMessageTransportOptions = {
 
 **Returns** `(event: Event) => boolean`
 
-### createCrossOriginObservable()
-
-**Type parameters**
-
-1. `MessageData`
+### createMessageObservable()
 
 **Arguments**
 
 1. [`target: PostMessageTarget`](#postmessagetarget)
-1. `allowedOrigin: string | Array<string>`
+1. `allowedOrigin?: string | Array<string>`
 
-**Returns** [`Observable<MessageData>`](https://rxjs.dev/api/index/class/Observable)
+**Returns** [`Observable<MessageEvent>`](https://rxjs.dev/api/index/class/Observable)
 
 ### createPostMessageObserver()
 
