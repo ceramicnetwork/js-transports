@@ -13,10 +13,10 @@ npm install @ceramicnetwork/transport-postmessage
 ### Same origin with a Web Worker
 
 ```ts
-import { PostMessageTransport } from '@ceramicnetwork/transport-postmessage'
+import { createPostMessageTransport } from '@ceramicnetwork/transport-postmessage'
 
 const worker = new Worker('worker.js')
-const transport = new PostMessageTransport<string>(worker)
+const transport = createPostMessageTransport<string>(worker)
 
 transport.subscribe((msg) => {
   console.log(msg)
@@ -27,11 +27,11 @@ transport.next('test')
 ### Cross-origin between Window and frame
 
 ```ts
-import { PostMessageTransport } from '@ceramicnetwork/transport-postmessage'
+import { createPostMessageTransport } from '@ceramicnetwork/transport-postmessage'
 
 const iframe = document.getElementById('iframe')
-const transport = new PostMessageTransport<string>(window, iframe, {
-  allowedOrigin: 'http://iframe.localhost', // Origin of the iframe messages are received from
+const transport = createPostMessageTransport<string>(window, iframe, {
+  filter: 'http://iframe.localhost', // Origin of the iframe messages are received from
   postMessageArguments: ['http://window.localhost'], // Origin of the window sending messages
 })
 
@@ -82,11 +82,25 @@ interface PostMessageTarget extends EventTarget {
 }
 ```
 
+### MessageFilter
+
+```ts
+type MessageFilter = (event: MessageEvent) => boolean
+```
+
+### IncomingMessage
+
+```ts
+interface IncomingMessage<Data = any> extends MessageEvent {
+  readonly data: Data
+}
+```
+
 ### PostMessageTransportOptions
 
 ```ts
 type PostMessageTransportOptions = {
-  allowedOrigin?: string | Array<string>
+  filter?: string | Array<string> | MessageFilter
   postMessageArguments?: Array<any>
 }
 ```
@@ -107,18 +121,22 @@ type PostMessageTransportOptions = {
 
 ### createMessageObservable()
 
+**Type parameters**
+
+1. `MessageData = any`
+
 **Arguments**
 
 1. [`target: PostMessageTarget`](#postmessagetarget)
-1. `allowedOrigin?: string | Array<string>`
+1. `originOrFilter?: string | Array<string> | MessageFilter`
 
-**Returns** [`Observable<MessageEvent>`](https://rxjs.dev/api/index/class/Observable)
+**Returns** [`Observable<IncomingMessage<Data>>`](https://rxjs.dev/api/index/class/Observable)
 
 ### createPostMessageObserver()
 
 **Type parameters**
 
-1. `MessageData`
+1. `MessageData = any`
 
 **Arguments**
 
@@ -127,22 +145,22 @@ type PostMessageTransportOptions = {
 
 **Returns** [`Observer<MessageData>`](https://rxjs.dev/api/index/interface/Observer)
 
-### PostMessageTransport class
+### createPostMessageTransport
 
-Extends `TransportSubject` class
+Combines [`createMessageObservable()`](#createmessageobservable) and [`createPostMessageObserver()`](#createpostmessageobserver) in a `TransportSubject`
 
 **Type parameters**
 
 1. `MsgIn`: the type of the messages coming in from the `from` target
 1. `MsgOut = MsgIn`: the type of the messages going out to the `to` target
 
-#### new PostMessageTransport()
-
 **Arguments**
 
 1. [`from: PostMessageTarget`](#postmessagetarget)
 1. [`to: PostMessageTarget = from`](#postmessagetarget)
-1. [`PostMessageTransportOptions = {}`](#postmessagetransportoptions)
+1. [`options?: PostMessageTransportOptions = {}`](#postmessagetransportoptions)
+
+**Returns** `TransportSubject<IncomingMessage<MsgIn>, MsgOut>`
 
 ## License
 

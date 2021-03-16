@@ -1,6 +1,6 @@
 {
   "name": "@ceramicnetwork/transport-subject",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Ceramic Studio",
   "license": "(Apache-2.0 OR MIT)",
   "main": "dist/index.js",
