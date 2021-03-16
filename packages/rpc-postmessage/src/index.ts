@@ -169,7 +169,7 @@ export function createCrossOriginServer<
     tap((payload) => {
       if (payload.type === 'response') {
         const source = payload.message.source as Window
-        source.postMessage(wrap(payload.response), source.origin)
+        source.postMessage(wrap(payload.response), payload.message.origin)
       }
     })
   )
