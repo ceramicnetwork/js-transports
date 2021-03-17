@@ -1,6 +1,6 @@
 {
   "name": "@ceramicnetwork/rpc-postmessage",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": "Ceramic Studio",
   "license": "(Apache-2.0 OR MIT)",
   "main": "dist/index.js",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@ceramicnetwork/transport-postmessage": "^0.2.0",
-    "rpc-utils": "^0.3.3",
+    "rpc-utils": "^0.3.4",
     "rxjs": "^6.6.6"
   },
   "devDependencies": {

@@ -41,7 +41,7 @@ export type ServerOptions<Context, Methods extends RPCMethods> = HandlerOptions<
   methods: HandlerMethods<Context, Methods>
 }
 
-export function serveSameOrigin<Methods extends RPCMethods>({
+export function serve<Methods extends RPCMethods>({
   target,
   methods,
   ...options
@@ -59,34 +59,20 @@ export function serveSameOrigin<Methods extends RPCMethods>({
     .subscribe(transport)
 }
 
-export type ErrorPayload<Message, Error = any> = {
-  type: 'error'
-  message: Message
-  error: Error
-}
 export type RequestPayload<Message, Methods extends RPCMethods, K extends keyof Methods> = {
   type: 'request'
   message: Message
   request: RPCRequest<Methods, K>
 }
+
 export type HandledPayload<Message, Methods extends RPCMethods, K extends keyof Methods> = {
   type: 'handled'
   message: Message
   request: RPCRequest<Methods, K>
   response: RPCResponse<Methods, K> | null
 }
-export type ResponsePayload<Message, Methods extends RPCMethods, K extends keyof Methods> = {
-  type: 'response'
-  message: Message
-  request: RPCRequest<Methods, K>
-  response: RPCResponse<Methods, K>
-}
-export type OutPayload<Message, Methods extends RPCMethods, K extends keyof Methods, Error = any> =
-  | ErrorPayload<Message, Error>
-  | HandledPayload<Message, Methods, K>
-  | ResponsePayload<Message, Methods, K>
 
-export function createCrossOriginRequestHandlerOperator<
+export function createNamespaceRequestHandlerOperator<
   Methods extends RPCMethods,
   Namespace extends string = string,
   Message = IncomingMessage<Wrapped<RPCRequest<Methods, keyof Methods>, Namespace>>
@@ -94,58 +80,46 @@ export function createCrossOriginRequestHandlerOperator<
   methods: HandlerMethods<Message, Methods>,
   namespace: Namespace,
   options: HandlerOptions<Message, Methods> = {}
-): OperatorFunction<Message, OutPayload<Message, Methods, keyof Methods>> {
+): OperatorFunction<Message, HandledPayload<Message, Methods, keyof Methods>> {
   const handleRequest = createHandler<Message, Methods>(methods, options)
   const unwrap = createUnwrap<RPCRequest<Methods, keyof Methods>>(namespace)
 
   return pipe(
     map((message) => {
       try {
-        return {
-          type: 'request',
-          message,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          request: unwrap((message as any).data), // TS error: semantic error TS2339: Property 'data' does not exist on type 'Message'
-        } as RequestPayload<Message, Methods, keyof Methods>
-      } catch (error) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        return { type: 'error', message, error } as ErrorPayload<Message>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const request = unwrap((message as any).data) // TS error: semantic error TS2339: Property 'data' does not exist on type 'Message'
+        return request.method ? { type: 'request', message, request } : null
+      } catch (_error) {
+        return null
       }
     }),
-    mergeMap(async (payload) => {
-      if (payload.type === 'error') {
-        return payload
+    filter((payload): payload is RequestPayload<Message, Methods, keyof Methods> => {
+      return payload !== null
+    }),
+    mergeMap(
+      async (payload): Promise<HandledPayload<Message, Methods, keyof Methods>> => {
+        return {
+          type: 'handled',
+          message: payload.message,
+          request: payload.request,
+          response: await handleRequest(payload.message, payload.request),
+        }
       }
-
-      const response = await handleRequest(payload.message, payload.request)
-      return response == null
-        ? ({
-            type: 'handled',
-            message: payload.message,
-            request: payload.request,
-            response,
-          } as HandledPayload<Message, Methods, keyof Methods>)
-        : ({
-            type: 'response',
-            message: payload.message,
-            request: payload.request,
-            response,
-          } as ResponsePayload<Message, Methods, keyof Methods>)
-    })
+    )
   )
 }
 
-export type CrossOriginServerOptions<
+export type NamespaceServerOptions<
   Methods extends RPCMethods,
   Namespace extends string = string,
   Message = IncomingMessage<Wrapped<RPCRequest<Methods, keyof Methods>, Namespace>>
 > = ServerOptions<Message, Methods> & {
   namespace: Namespace
   filter?: string | Array<string> | MessageFilter
-  sendResponse?: (payload: ResponsePayload<Message, Methods, keyof Methods>) => void
 }
 
-export function createCrossOriginServer<
+export function createNamespaceServer<
   Methods extends RPCMethods,
   Namespace extends string = string,
   Request = Wrapped<RPCRequest<Methods, keyof Methods>, Namespace>
@@ -155,35 +129,38 @@ export function createCrossOriginServer<
   namespace,
   target,
   ...options
-}: CrossOriginServerOptions<Methods, Namespace, IncomingMessage<Request>>): Observable<
-  OutPayload<IncomingMessage<Request>, Methods, keyof Methods>
+}: NamespaceServerOptions<Methods, Namespace, IncomingMessage<Request>>): Observable<
+  HandledPayload<IncomingMessage<Request>, Methods, keyof Methods>
 > {
   const wrap = createWrap<RPCResponse<Methods, keyof Methods>>(namespace)
 
   return createMessageObservable<Request>(target, messageFilter).pipe(
-    createCrossOriginRequestHandlerOperator<Methods, Namespace, IncomingMessage<Request>>(
+    createNamespaceRequestHandlerOperator<Methods, Namespace, IncomingMessage<Request>>(
       methods,
       namespace,
       options
     ),
     tap((payload) => {
-      if (payload.type === 'response') {
-        const source = payload.message.source as Window
-        source.postMessage(wrap(payload.response), payload.message.origin)
+      if (payload.response != null) {
+        const source = (payload.message.source ?? window) as Window
+        source.postMessage(wrap(payload.response), payload.message.origin || '*')
       }
     })
   )
 }
 
-export type WrappedClientTransport<
+export type NamespaceClientTransport<
   Methods extends RPCMethods,
   Namespace extends string,
   Incoming = IncomingMessage<Wrapped<RPCResponse<Methods, keyof Methods>, Namespace>>,
   Outgoing = Wrapped<RPCRequest<Methods, keyof Methods>, Namespace>
 > = TransportSubject<Incoming, Outgoing>
 
-export function createSendRequest<Methods extends RPCMethods, Namespace extends string = string>(
-  transport: WrappedClientTransport<Methods, Namespace>,
+export function createNamespaceSendRequest<
+  Methods extends RPCMethods,
+  Namespace extends string = string
+>(
+  transport: NamespaceClientTransport<Methods, Namespace>,
   namespace: Namespace,
   options?: UnwrapObservableOptions
 ): SendRequestFunc<Methods> {
@@ -202,7 +179,7 @@ export function createSendRequest<Methods extends RPCMethods, Namespace extends 
       .pipe(
         map((message) => message.data),
         unwrap,
-        first((res) => res.id === req.id)
+        first((res) => res != null && res.id === req.id && ('error' in res || 'result' in res))
       )
       .toPromise()
     observer.next(req)
@@ -210,14 +187,14 @@ export function createSendRequest<Methods extends RPCMethods, Namespace extends 
   }
 }
 
-export function createCrossOriginClient<
+export function createNamespaceClient<
   Methods extends RPCMethods,
   Namespace extends string = string
 >(
-  transport: WrappedClientTransport<Methods, Namespace>,
+  transport: NamespaceClientTransport<Methods, Namespace>,
   namespace: Namespace,
   options?: UnwrapObservableOptions
 ): RPCClient<Methods> {
-  const send = createSendRequest(transport, namespace, options)
+  const send = createNamespaceSendRequest(transport, namespace, options)
   return new RPCClient<Methods>({ send })
 }

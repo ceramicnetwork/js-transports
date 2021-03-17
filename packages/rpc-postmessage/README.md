@@ -11,35 +11,29 @@ npm install @ceramicnetwork/rpc-postmessage
 ## Usage
 
 ```ts
-import { serveCrossOrigin } from '@ceramicnetwork/rpc-postmessage'
+import { createNamespaceClient, createNamespaceServer } from '@ceramicnetwork/rpc-postmessage'
 
 type Methods = {
   foo: { result: string }
 }
 
-const server = serveCrossOrigin<Methods>(window, {
-  allowedOrigin: ['https://foo.bar', 'http://localhost'], // Allow messages from these origins
-  ownOrigin: 'http://localhost', // Server messages will be sent using this origin
-  methods: {
-    foo: () => 'bar',
-  },
-})
+const server = createNamespaceServer<Methods>({
+  target: window, // Listens to requests on window
+  namespace: 'test',
+  methods: { foo: () => 'bar' },
+}).subscribe()
+
+// Sends requests and receives responses on window
+const transport = createPostMessageTransport(window, window, { postMessageArguments: ['*'] })
+
+const client = createNamespaceClient(transport, 'test')
+await client.request('foo') // 'bar'
 
 // Stop server when done
 server.unsubscribe()
 ```
 
 ## Types
-
-### ErrorPayload
-
-```ts
-type ErrorPayload<Message, Error = any> = {
-  type: 'error'
-  message: Message
-  error: Error
-}
-```
 
 ### RequestPayload
 
@@ -66,30 +60,6 @@ type HandledPayload<Message, Methods extends RPCMethods, K extends keyof Methods
 }
 ```
 
-### ResponsePayload
-
-Uses [`RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods), [`RPCRequest`](https://github.com/ceramicnetwork/js-rpc-utils#rpcrequest) and [`RPCResponse`](https://github.com/ceramicnetwork/js-rpc-utils#rpcresponse)
-
-```ts
-type ResponsePayload<Message, Methods extends RPCMethods, K extends keyof Methods> = {
-  type: 'response'
-  message: Message
-  request: RPCRequest<Methods, K>
-  response: RPCResponse<Methods, K>
-}
-```
-
-### OutPayload
-
-Uses [`RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods), [`RPCRequest`](https://github.com/ceramicnetwork/js-rpc-utils#rpcrequest) and [`RPCResponse`](https://github.com/ceramicnetwork/js-rpc-utils#rpcresponse)
-
-```ts
-type OutPayload<Message, Methods extends RPCMethods, K extends keyof Methods, Error = any> =
-  | ErrorPayload<Message, Error>
-  | HandledPayload<Message, Methods, K>
-  | ResponsePayload<Message, Methods, K>
-```
-
 ### ServerOptions
 
 Uses [`RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods), [`HandlerMethods`](https://github.com/ceramicnetwork/js-rpc-utils#handlermethods) and [`HandlerOptions`](https://github.com/ceramicnetwork/js-rpc-utils#handleroptions)
@@ -104,24 +74,23 @@ type type ServerOptions<Context, Methods extends RPCMethods> = HandlerOptions<
 }
 ```
 
-### CrossOriginServerOptions
+### NamespaceServerOptions
 
 ```ts
-export type CrossOriginServerOptions<
+export type NamespaceServerOptions<
   Methods extends RPCMethods,
   Namespace extends string = string,
   Message = IncomingMessage<Wrapped<RPCRequest<Methods, keyof Methods>, Namespace>>
 > = ServerOptions<Message, Methods> & {
   namespace: Namespace
   filter?: string | Array<string> | MessageFilter
-  sendResponse?: (payload: ResponsePayload<Message, Methods, keyof Methods>) => void
 }
 ```
 
-### WrappedClientTransport
+### NamespaceClientTransport
 
 ```ts
-type WrappedClientTransport<
+type NamespaceClientTransport<
   Methods extends RPCMethods,
   Namespace extends string,
   Incoming = IncomingMessage<Wrapped<RPCResponse<Methods, keyof Methods>, Namespace>>,
@@ -131,7 +100,7 @@ type WrappedClientTransport<
 
 ## APIs
 
-### serveSameOrigin()
+### serve()
 
 Receives requests and sends responses on the provided `target`
 
@@ -145,7 +114,7 @@ Receives requests and sends responses on the provided `target`
 
 **Returns** [`Subscription`](https://rxjs.dev/api/index/class/Subscription)
 
-### createCrossOriginRequestHandlerOperator()
+### createNamespaceRequestHandlerOperator()
 
 **Type parameters**
 
@@ -159,9 +128,9 @@ Receives requests and sends responses on the provided `target`
 1. `namespace: Namespace`
 1. `options?: HandlerOptions<Message, Methods> = {}`
 
-**Returns** `OperatorFunction<Message, OutPayload<Message, Methods, keyof Methods>>`
+**Returns** `OperatorFunction<Message, HandledPayload<Message, Methods, keyof Methods>>`
 
-### createCrossOriginServer()
+### createNamespaceServer()
 
 **Type parameters**
 
@@ -171,11 +140,11 @@ Receives requests and sends responses on the provided `target`
 
 **Arguments**
 
-1. [`options: CrossOriginServerOptions<Methods, Namespace, IncomingMessage<Request>>`](#crossoriginserveroptions)
+1. [`options: NamespaceServerOptions<Methods, Namespace, IncomingMessage<Request>>`](#namespaceserveroptions)
 
-**Returns** `Observable<OutPayload<IncomingMessage<Request>, Methods, keyof Methods>>`
+**Returns** `Observable<HandledPayload<IncomingMessage<Request>, Methods, keyof Methods>>`
 
-### createCrossOriginSendRequest()
+### createNamespaceSendRequest()
 
 **Type parameters**
 
@@ -184,13 +153,13 @@ Receives requests and sends responses on the provided `target`
 
 **Arguments**
 
-1. [`transport: WrappedClientTransport<Methods, Namespace>`](#wrappedclienttransport)
+1. [`transport: NamespaceClientTransport<Methods, Namespace>`](#namespaceclienttransport)
 1. `namespace: Namespace`
 1. `options?: UnwrapObservableOptions`
 
 **Returns** [`SendRequestFunc<Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#sendrequestfunc)
 
-### createCrossOriginClient()
+### createNamespaceClient()
 
 **Type parameters**
 
@@ -199,7 +168,7 @@ Receives requests and sends responses on the provided `target`
 
 **Arguments**
 
-1. [`transport: WrappedClientTransport<Methods, Namespace>`](#wrappedclienttransport)
+1. [`transport: NamespaceClientTransport<Methods, Namespace>`](#namespaceclienttransport)
 1. `namespace: Namespace`
 1. `options?: UnwrapObservableOptions`
 
