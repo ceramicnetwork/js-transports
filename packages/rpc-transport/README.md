@@ -11,7 +11,7 @@ npm install @ceramicnetwork/rpc-transport
 ## Usage
 
 ```ts
-import { createClientClass, serve } from '@ceramicnetwork/rpc-transport'
+import { createClient, serve } from '@ceramicnetwork/rpc-transport'
 
 // Methods type shared between the client and server
 type Methods = {
@@ -29,9 +29,13 @@ const server = serve<null, Methods>(serverTransport, null, {
   foo: () => 'bar',
 })
 
-class TestClient extends createClientClass<Methods>(clientTransport) {
+class TestClient {
+  constructor(transport: TransportSubject) {
+    this.client = createClient<Methods>(transport)
+  }
+
   async foo() {
-    return await this.request('foo')
+    return await this.client.request('foo')
   }
 }
 
@@ -68,6 +72,45 @@ type RPCClientTransport<Methods extends RPCMethods> = TransportSubject<
 
 ## APIs
 
+### createSendRequest()
+
+**Type parameters**
+
+1. [`Methods extends RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods)
+
+**Arguments**
+
+1. [`transport: RPCClientTransport<Methods>`](#rpcclienttransport)
+
+**Returns** [`SendRequestFunc<Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#sendrequestfunc)
+
+### createClient()
+
+**Type parameters**
+
+1. [`Methods extends RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods)
+
+**Arguments**
+
+1. [`transport: RPCClientTransport<Methods>`](#rpcclienttransport)
+
+**Returns** [`RPCClient<Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#rpcclient-class)
+
+### createHandlerOperator()
+
+**Type parameters**
+
+1. `Context`
+1. [`Methods extends RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods)
+
+**Arguments**
+
+1. `context: Context`
+1. [`methods: HandlerMethods<Context, Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#handlermethods)
+1. [`options?: HandlerOptions<Context, Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#handleroptions)
+
+**Returns** `OperatorFunction<RPCRequest<Methods, keyof Methods>, RPCResponse<Methods, keyof Methods> | null>`
+
 ### serve()
 
 **Type parameters**
@@ -83,42 +126,6 @@ type RPCClientTransport<Methods extends RPCMethods> = TransportSubject<
 1. [`options?: HandlerOptions<Context, Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#handleroptions)
 
 **Returns** [`Subscription`](https://rxjs.dev/api/index/class/Subscription)
-
-### createSendRequest()
-
-**Type parameters**
-
-1. [`Methods extends RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods)
-
-**Arguments**
-
-1. [`transport: RPCClientTransport<Methods>`](#rpcclienttransport)
-
-**Returns** [`SendRequestFunc<Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#sendrequestfunc)
-
-### createClientClass()
-
-**Type parameters**
-
-1. [`Methods extends RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods)
-
-**Arguments**
-
-1. [`transport: RPCClientTransport<Methods>`](#rpcclienttransport)
-
-**Returns** [`new () => RPCClient<Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#rpcclient-class)
-
-### createClient()
-
-**Type parameters**
-
-1. [`Methods extends RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods)
-
-**Arguments**
-
-1. [`transport: RPCClientTransport<Methods>`](#rpcclienttransport)
-
-**Returns** [`RPCClient<Methods>`](https://github.com/ceramicnetwork/js-rpc-utils#rpcclient-class)
 
 ## License
 

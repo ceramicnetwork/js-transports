@@ -1,7 +1,7 @@
 import { TransportSubject } from '@ceramicnetwork/transport-subject'
 import { Subscriber, fromEvent } from 'rxjs'
 import type { Observable, Observer } from 'rxjs'
-import { filter, map } from 'rxjs/operators'
+import { filter } from 'rxjs/operators'
 
 // Similar to the MessagePort interface
 export interface PostMessageEventMap {
@@ -34,6 +34,13 @@ export interface PostMessageTarget extends EventTarget {
   ): void
 }
 
+export type MessageFilter = (event: MessageEvent) => boolean
+
+// Workarout for TS error about MessageEvent not being generic
+export interface IncomingMessage<Data = any> extends MessageEvent {
+  readonly data: Data
+}
+
 export function createOriginFilter<Event extends MessageEvent>(
   allowedOrigin: string | Array<string>
 ): (event: Event) => boolean {
@@ -43,15 +50,21 @@ export function createOriginFilter<Event extends MessageEvent>(
   return (event: Event) => allowedOrigin.includes(event.origin)
 }
 
-export function createMessageObservable(
+export function createMessageObservable<MessageData = any>(
   target: PostMessageTarget,
-  allowedOrigin?: string | Array<string>
-): Observable<MessageEvent> {
+  originOrFilter?: string | Array<string> | MessageFilter
+): Observable<IncomingMessage<MessageData>> {
   const source = fromEvent<MessageEvent>(target, 'message')
-  return allowedOrigin ? source.pipe(filter(createOriginFilter(allowedOrigin))) : source
+  if (originOrFilter == null) {
+    return source
+  }
+
+  const messageFilter =
+    typeof originOrFilter === 'function' ? originOrFilter : createOriginFilter(originOrFilter)
+  return source.pipe(filter(messageFilter))
 }
 
-export function createPostMessageObserver<MessageData>(
+export function createPostMessageObserver<MessageData = any>(
   target: PostMessageTarget,
   ...args: Array<any>
 ): Observer<MessageData> {
@@ -63,23 +76,16 @@ export function createPostMessageObserver<MessageData>(
 }
 
 export type PostMessageTransportOptions = {
-  allowedOrigin?: string | Array<string>
+  filter?: string | Array<string> | MessageFilter
   postMessageArguments?: Array<any>
 }
-export class PostMessageTransport<MsgIn, MsgOut = MsgIn> extends TransportSubject<MsgIn, MsgOut> {
-  constructor(
-    from: PostMessageTarget,
-    to: PostMessageTarget = from,
-    { allowedOrigin, postMessageArguments }: PostMessageTransportOptions = {}
-  ) {
-    const source = createMessageObservable(from, allowedOrigin).pipe(
-      map((event) => event.data as MsgIn)
-    )
 
-    const sink = postMessageArguments
-      ? createPostMessageObserver(to, ...postMessageArguments)
-      : createPostMessageObserver(to)
-
-    super(source, sink)
-  }
+export function createPostMessageTransport<MsgIn, MsgOut = MsgIn>(
+  from: PostMessageTarget,
+  to: PostMessageTarget = from,
+  { filter, postMessageArguments = [] }: PostMessageTransportOptions = {}
+): TransportSubject<IncomingMessage<MsgIn>, MsgOut> {
+  const source = createMessageObservable<MsgIn>(from, filter)
+  const sink = createPostMessageObserver<MsgOut>(to, ...postMessageArguments)
+  return new TransportSubject(source, sink)
 }
