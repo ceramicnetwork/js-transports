@@ -9,6 +9,7 @@
     "paths": {
       "@ceramicnetwork/rpc-postmessage": ["packages/rpc-postmessage/src"],
       "@ceramicnetwork/rpc-transport": ["packages/rpc-transport/src"],
+      "@ceramicnetwork/rpc-window": ["packages/rpc-window/src"],
       "@ceramicnetwork/transport-postmessage": ["packages/transport-postmessage/src"],
       "@ceramicnetwork/transport-subject": ["packages/transport-subject/src"]
     }

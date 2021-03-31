@@ -1,14 +1,29 @@
 {
   "name": "@ceramicnetwork/transport-postmessage",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Ceramic Studio",
   "license": "(Apache-2.0 OR MIT)",
+  "homepage": "https://github.com/ceramicnetwork/js-transports#readme",
+  "keywords": [
+    "rxjs",
+    "transport",
+    "postmessage"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ceramicnetwork/js-transports",
+    "directory": "packages/transport-postmessage"
+  },
   "main": "dist/index.js",
   "module": "dist/transport-postmessage.esm.js",
   "typings": "dist/index.d.ts",
+  "exports": {
+    "require": "./dist/index.js",
+    "import": "./dist/transport-postmessage.esm.js",
+    "default": "./dist/transport-postmessage.esm.js"
+  },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "engines": {
     "node": ">=12"
@@ -18,10 +33,11 @@
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "test": "tsdx test",
     "lint": "tsdx lint src test --fix",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "prepublishOnly": "package-check"
   },
   "dependencies": {
-    "@ceramicnetwork/transport-subject": "^0.2.0",
+    "@ceramicnetwork/transport-subject": "^0.3.0",
     "rxjs": "^6.6.6"
   },
   "devDependencies": {
