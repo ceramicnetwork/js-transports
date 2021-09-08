@@ -1,25 +1,25 @@
 {
-  "name": "@ceramicnetwork/rpc-postmessage",
-  "version": "0.4.0",
+  "name": "@ceramicnetwork/rpc-window",
+  "version": "0.1.0",
   "author": "Ceramic Studio",
   "license": "(Apache-2.0 OR MIT)",
   "homepage": "https://github.com/ceramicnetwork/js-transports#readme",
   "keywords": [
     "rpc",
-    "postmessage"
+    "window"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ceramicnetwork/js-transports",
-    "directory": "packages/rpc-postmessage"
+    "directory": "packages/rpc-window"
   },
   "main": "dist/index.js",
-  "module": "dist/rpc-postmessage.esm.js",
+  "module": "dist/rpc-window.esm.js",
   "typings": "dist/index.d.ts",
   "exports": {
     "require": "./dist/index.js",
-    "import": "./dist/rpc-postmessage.esm.js",
-    "default": "./dist/rpc-postmessage.esm.js"
+    "import": "./dist/rpc-window.esm.js",
+    "default": "./dist/rpc-window.esm.js"
   },
   "files": [
     "dist"
@@ -36,20 +36,13 @@
     "prepublishOnly": "package-check"
   },
   "dependencies": {
-    "@ceramicnetwork/rpc-transport": "^0.3.0",
-    "@ceramicnetwork/transport-subject": "^0.3.0",
+    "@ceramicnetwork/rpc-postmessage": "^0.4.0",
     "@ceramicnetwork/transport-postmessage": "^0.3.0",
-    "rpc-utils": "^0.3.4",
-    "rxjs": "^6.6.6"
+    "rpc-utils": "^0.3.4"
   },
   "devDependencies": {
-    "jsdom-worker": "^0.2.1",
+    "@ceramicnetwork/transport-subject": "^0.3.0",
     "rxjs": "^6.6.6",
     "tslib": "^2.1.0"
-  },
-  "jest": {
-    "setupFiles": [
-      "jsdom-worker"
-    ]
   }
 }

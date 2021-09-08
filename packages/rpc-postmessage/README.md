@@ -65,10 +65,7 @@ type HandledPayload<Message, Methods extends RPCMethods, K extends keyof Methods
 Uses [`RPCMethods`](https://github.com/ceramicnetwork/js-rpc-utils#rpcmethods), [`HandlerMethods`](https://github.com/ceramicnetwork/js-rpc-utils#handlermethods) and [`HandlerOptions`](https://github.com/ceramicnetwork/js-rpc-utils#handleroptions)
 
 ```ts
-type type ServerOptions<Context, Methods extends RPCMethods> = HandlerOptions<
-  Context,
-  Methods
-> & {
+type ServerOptions<Context, Methods extends RPCMethods> = HandlerOptions<Context, Methods> & {
   target: PostMessageTarget
   methods: HandlerMethods<Context, Methods>
 }
@@ -77,7 +74,7 @@ type type ServerOptions<Context, Methods extends RPCMethods> = HandlerOptions<
 ### NamespaceServerOptions
 
 ```ts
-export type NamespaceServerOptions<
+type NamespaceServerOptions<
   Methods extends RPCMethods,
   Namespace extends string = string,
   Message = IncomingMessage<Wrapped<RPCRequest<Methods, keyof Methods>, Namespace>>

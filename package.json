@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.10.1",
+    "@skypack/package-check": "^0.2.2",
     "@types/jest": "^26.0.20",
     "eslint": "^7.22.0",
     "eslint-config-3box": "^0.2.0",
