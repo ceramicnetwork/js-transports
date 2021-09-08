@@ -38,7 +38,7 @@
   "dependencies": {
     "@ceramicnetwork/rpc-postmessage": "^0.4.0",
     "@ceramicnetwork/transport-postmessage": "^0.3.0",
-    "rpc-utils": "^0.3.4"
+    "rpc-utils": "^0.4.0"
   },
   "devDependencies": {
     "@ceramicnetwork/transport-subject": "^0.3.0",

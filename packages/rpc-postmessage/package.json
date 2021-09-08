@@ -39,7 +39,7 @@
     "@ceramicnetwork/rpc-transport": "^0.3.0",
     "@ceramicnetwork/transport-subject": "^0.3.0",
     "@ceramicnetwork/transport-postmessage": "^0.3.0",
-    "rpc-utils": "^0.3.4",
+    "rpc-utils": "^0.4.0",
     "rxjs": "^6.6.6"
   },
   "devDependencies": {
