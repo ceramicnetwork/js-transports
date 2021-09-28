@@ -37,7 +37,7 @@
     "prepublishOnly": "package-check"
   },
   "dependencies": {
-    "@ceramicnetwork/rpc-postmessage": "^0.4.0",
+    "@ceramicnetwork/rpc-postmessage": "^0.5.0",
     "@ceramicnetwork/transport-postmessage": "^0.4.0",
     "rpc-utils": "^0.4.0"
   },
