@@ -1,11 +1,10 @@
-
 {
   "extends": "./tsconfig.build.json",
-  "include": ["packages", "types"],
+  "include": ["packages"],
   "compilerOptions": {
     "allowJs": false,
     "baseUrl": ".",
-    "typeRoots": ["./node_modules/@types", "./types"],
+    "typeRoots": ["./node_modules/@types"],
     "paths": {
       "@ceramicnetwork/rpc-postmessage": ["packages/rpc-postmessage/src"],
       "@ceramicnetwork/rpc-transport": ["packages/rpc-transport/src"],
@@ -13,5 +12,4 @@
       "@ceramicnetwork/transport-postmessage": ["packages/transport-postmessage/src"],
       "@ceramicnetwork/transport-subject": ["packages/transport-subject/src"]
     }
-  }
-}
+  }}

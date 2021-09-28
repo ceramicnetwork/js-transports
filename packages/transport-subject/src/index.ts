@@ -1,12 +1,20 @@
-import { Subject, Subscriber, Subscription, pipe } from 'rxjs'
-import type { Observable, Observer, OperatorFunction } from 'rxjs'
+/**
+ * ```sh
+ * npm install @ceramicnetwork/transport-subject
+ * ```
+ *
+ * @module transport-subject
+ */
+
+import { Subject, Subscription, pipe } from 'rxjs'
+import type { NextObserver, Observable, OperatorFunction, PartialObserver } from 'rxjs'
 import { filter, map } from 'rxjs/operators'
 
 export class TransportSubject<MsgIn, MsgOut = MsgIn> extends Subject<MsgIn> {
   _source: Observable<MsgIn>
-  _sink: Observer<MsgOut>
+  _sink: PartialObserver<MsgOut>
 
-  constructor(source: Observable<MsgIn>, sink: Observer<MsgOut>) {
+  constructor(source: Observable<MsgIn>, sink: PartialObserver<MsgOut>) {
     super()
     this._source = source
     this._sink = sink
@@ -27,8 +35,8 @@ export class TransportSubject<MsgIn, MsgOut = MsgIn> extends Subject<MsgIn> {
     this._sink.complete?.()
   }
 
-  _subscribe(subscriber: Subscriber<MsgIn>): Subscription {
-    return this._source.subscribe(subscriber) ?? Subscription.EMPTY
+  _subscribe(observer: PartialObserver<MsgIn>): Subscription {
+    return this._source.subscribe(observer) ?? Subscription.EMPTY
   }
 }
 
@@ -101,7 +109,7 @@ export function createUnwrapOperator<WrappedIn, MsgIn>(
       try {
         return unwrap(input)
       } catch (err) {
-        onInvalid(input, err)
+        onInvalid(input, err as Error)
         return null
       }
     }),
@@ -110,14 +118,17 @@ export function createUnwrapOperator<WrappedIn, MsgIn>(
 }
 
 export function createWrapObserver<MsgOut, WrappedOut>(
-  observer: Observer<WrappedOut>,
+  observer: NextObserver<WrappedOut>,
   wrap: (msg: MsgOut) => WrappedOut
-): Observer<MsgOut> {
-  return new Subscriber((msg) => {
-    if (msg != null) {
-      observer.next(wrap(msg))
-    }
-  })
+): NextObserver<MsgOut> {
+  return {
+    ...observer,
+    next: (msg) => {
+      if (msg != null) {
+        observer.next(wrap(msg))
+      }
+    },
+  }
 }
 
 export function createWrappedTransport<MsgIn, MsgOut, WrappedIn, WrappedOut = WrappedIn>(

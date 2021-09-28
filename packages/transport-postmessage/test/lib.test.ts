@@ -156,6 +156,7 @@ describe('createPostMessageTransport', () => {
     return new Promise<void>((done) => {
       iframe.onload = () => {
         // iframe.contentWindow will be available once loaded
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const target = iframe.contentWindow!
         // Inject code in iframe using script tag
         const s = target.document.createElement('script')

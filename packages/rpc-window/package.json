@@ -1,6 +1,6 @@
 {
   "name": "@ceramicnetwork/rpc-window",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "author": "Ceramic Studio",
   "license": "(Apache-2.0 OR MIT)",
   "homepage": "https://github.com/ceramicnetwork/js-transports#readme",
@@ -13,36 +13,39 @@
     "url": "https://github.com/ceramicnetwork/js-transports",
     "directory": "packages/rpc-window"
   },
-  "main": "dist/index.js",
-  "module": "dist/rpc-window.esm.js",
+  "main": "dist/lib.cjs",
+  "module": "dist/lib.mjs",
   "typings": "dist/index.d.ts",
   "exports": {
-    "require": "./dist/index.js",
-    "import": "./dist/rpc-window.esm.js",
-    "default": "./dist/rpc-window.esm.js"
+    "import": "./dist/lib.mjs",
+    "require": "./dist/lib.cjs",
+    "default": "./dist/lib.cjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "engines": {
-    "node": ">=12"
+    "node": ">=14.14"
   },
+  "sideEffects": false,
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build --tsconfig tsconfig.build.json",
-    "test": "tsdx test",
-    "lint": "tsdx lint src test --fix",
-    "prepublish": "npm run build",
+    "build": "del dist && tsc --emitDeclarationOnly --skipLibCheck && rollup -c ../../rollup.config.js",
+    "lint": "eslint src test --fix",
+    "test": "jest",
+    "prepare": "yarn build",
     "prepublishOnly": "package-check"
   },
   "dependencies": {
     "@ceramicnetwork/rpc-postmessage": "^0.4.0",
-    "@ceramicnetwork/transport-postmessage": "^0.3.0",
+    "@ceramicnetwork/transport-postmessage": "^0.4.0",
     "rpc-utils": "^0.4.0"
   },
   "devDependencies": {
-    "@ceramicnetwork/transport-subject": "^0.3.0",
-    "rxjs": "^6.6.6",
-    "tslib": "^2.1.0"
+    "@ceramicnetwork/transport-subject": "^0.4.0",
+    "rxjs": "^7.3.0"
+  },
+  "jest": {
+    "preset": "ts-jest"
   }
 }
