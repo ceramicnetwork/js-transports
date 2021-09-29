@@ -1,0 +1,33 @@
+{
+  "extends": "./tsconfig.build.json",
+  "include": [
+    "./packages/rpc-postmessage/src",
+    "./packages/rpc-transport/src",
+    "./packages/rpc-window/src",
+    "./packages/transport-postmessage/src",
+    "./packages/transport-subject/src"
+  ],
+  "compilerOptions": {
+    "jsx": "preserve",
+    "lib": ["DOM", "ES2020"],
+    "skipLibCheck": true
+  },
+  "typedocOptions": {
+    "name": "Transports API",
+    "readme": "none",
+    "entryPoints": [
+      "./packages/rpc-postmessage/src/index.ts",
+      "./packages/rpc-transport/src/index.ts",
+      "./packages/rpc-window/src/index.ts",
+      "./packages/transport-postmessage/src/index.ts",
+      "./packages/transport-subject/src/index.ts"
+    ],
+    "githubPages": false,
+    "disableSources": true,
+    "excludeExternals": true,
+    "excludeInternal": true,
+    "excludePrivate": true,
+    "hideBreadcrumbs": true,
+    "hideInPageTOC": true
+  }
+}

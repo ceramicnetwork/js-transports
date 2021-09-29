@@ -2,10 +2,10 @@
   "compilerOptions": {
     "module": "esnext",
     "lib": ["dom", "esnext"],
-    "keyofStringsOnly": true,
-    "importHelpers": true,
+    "target": "ES2020",
+    "importHelpers": false,
     "declaration": true,
-    "sourceMap": true,   
+    "sourceMap": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

@@ -1,6 +1,6 @@
 {
   "name": "@ceramicnetwork/rpc-postmessage",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "author": "Ceramic Studio",
   "license": "(Apache-2.0 OR MIT)",
   "homepage": "https://github.com/ceramicnetwork/js-transports#readme",
@@ -13,41 +13,42 @@
     "url": "https://github.com/ceramicnetwork/js-transports",
     "directory": "packages/rpc-postmessage"
   },
-  "main": "dist/index.js",
-  "module": "dist/rpc-postmessage.esm.js",
+  "main": "dist/lib.cjs",
+  "module": "dist/lib.mjs",
   "typings": "dist/index.d.ts",
   "exports": {
-    "require": "./dist/index.js",
-    "import": "./dist/rpc-postmessage.esm.js",
-    "default": "./dist/rpc-postmessage.esm.js"
+    "import": "./dist/lib.mjs",
+    "require": "./dist/lib.cjs",
+    "default": "./dist/lib.cjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "engines": {
-    "node": ">=12"
+    "node": ">=14.14"
   },
+  "sideEffects": false,
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build --tsconfig tsconfig.build.json",
-    "test": "tsdx test",
-    "lint": "tsdx lint src test --fix",
-    "prepublish": "npm run build",
+    "build": "del dist && tsc --emitDeclarationOnly --skipLibCheck && rollup -c ../../rollup.config.js",
+    "lint": "eslint src test --fix",
+    "test": "jest",
+    "prepare": "yarn build",
     "prepublishOnly": "package-check"
   },
   "dependencies": {
-    "@ceramicnetwork/rpc-transport": "^0.3.0",
-    "@ceramicnetwork/transport-postmessage": "^0.3.0",
-    "@ceramicnetwork/transport-subject": "^0.3.0",
+    "@ceramicnetwork/rpc-transport": "^0.4.0",
+    "@ceramicnetwork/transport-postmessage": "^0.4.0",
+    "@ceramicnetwork/transport-subject": "^0.4.0",
     "rpc-utils": "^0.4.0",
-    "rxjs": "^6.6.6"
+    "rxjs": "^7.3.0"
   },
   "devDependencies": {
-    "jsdom-worker": "^0.2.1",
-    "rxjs": "^6.6.6",
-    "tslib": "^2.1.0"
+    "jsdom-worker": "^0.2.1"
   },
   "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
     "setupFiles": [
       "jsdom-worker"
     ]

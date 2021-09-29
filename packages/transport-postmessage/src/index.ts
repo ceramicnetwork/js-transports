@@ -1,6 +1,14 @@
+/**
+ * ```sh
+ * npm install @ceramicnetwork/transport-postmessage
+ * ```
+ *
+ * @module transport-postmessage
+ */
+
 import { TransportSubject } from '@ceramicnetwork/transport-subject'
-import { Subscriber, fromEvent } from 'rxjs'
-import type { Observable, Observer } from 'rxjs'
+import { fromEvent } from 'rxjs'
+import type { NextObserver, Observable } from 'rxjs'
 import { filter } from 'rxjs/operators'
 
 // Similar to the MessagePort interface
@@ -67,12 +75,14 @@ export function createMessageObservable<MessageData = any>(
 export function createPostMessageObserver<MessageData = any>(
   target: PostMessageTarget,
   ...args: Array<any>
-): Observer<MessageData> {
-  return Subscriber.create<MessageData>((message) => {
-    if (message != null) {
-      target.postMessage(message, ...args)
-    }
-  })
+): NextObserver<MessageData> {
+  return {
+    next: (message: MessageData) => {
+      if (message != null) {
+        target.postMessage(message, ...args)
+      }
+    },
+  }
 }
 
 export type PostMessageTransportOptions = {

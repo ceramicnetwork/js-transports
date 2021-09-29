@@ -1,3 +1,11 @@
+/**
+ * ```sh
+ * npm install @ceramicnetwork/rpc-postmessage
+ * ```
+ *
+ * @module rpc-postmessage
+ */
+
 import { createHandlerOperator } from '@ceramicnetwork/rpc-transport'
 import {
   createUnwrap,
@@ -97,16 +105,14 @@ export function createNamespaceRequestHandlerOperator<
     filter((payload): payload is RequestPayload<Message, Methods, keyof Methods> => {
       return payload !== null
     }),
-    mergeMap(
-      async (payload): Promise<HandledPayload<Message, Methods, keyof Methods>> => {
-        return {
-          type: 'handled',
-          message: payload.message,
-          request: payload.request,
-          response: await handleRequest(payload.message, payload.request),
-        }
+    mergeMap(async (payload): Promise<HandledPayload<Message, Methods, keyof Methods>> => {
+      return {
+        type: 'handled',
+        message: payload.message,
+        request: payload.request,
+        response: await handleRequest(payload.message, payload.request),
       }
-    )
+    })
   )
 }
 
@@ -175,15 +181,22 @@ export function createNamespaceSendRequest<
   return async function send<K extends keyof Methods>(
     req: RPCRequest<Methods, K>
   ): Promise<RPCResponse<Methods, K>> {
-    const res = transport
-      .pipe(
-        map((message) => message.data),
-        unwrap,
-        first((res) => res != null && res.id === req.id && ('error' in res || 'result' in res))
-      )
-      .toPromise()
-    observer.next(req)
-    return await res
+    return new Promise((resolve, reject) => {
+      const subscription = transport
+        .pipe(
+          map((message) => message.data),
+          unwrap,
+          first((res) => res != null && res.id === req.id && ('error' in res || 'result' in res))
+        )
+        .subscribe({
+          next: (res) => {
+            resolve(res)
+            subscription.unsubscribe()
+          },
+          error: reject,
+        })
+      observer.next(req)
+    })
   }
 }
 
