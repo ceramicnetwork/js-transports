@@ -1,6 +1,6 @@
 import { createClient, createServer } from '../src'
 
-describe('iframe-rpc', () => {
+describe('rpc-window', () => {
   test('exports createClient and createServer', () => {
     expect(createClient).toBeDefined()
     expect(createServer).toBeDefined()

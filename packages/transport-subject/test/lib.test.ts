@@ -1,4 +1,4 @@
-import { Observable, Subject, Subscriber } from 'rxjs'
+import { Observable, Subject } from 'rxjs'
 import { count } from 'rxjs/operators'
 
 import {
@@ -12,9 +12,15 @@ import {
   createNamespacedTransport,
 } from '../src'
 
+const emptyObserver = {
+  next: () => {
+    // noop
+  },
+}
+
 describe('TransportSubject', () => {
   test('is an instance of Subject', () => {
-    const subject = new TransportSubject(new Observable(), new Subscriber())
+    const subject = new TransportSubject(new Observable(), emptyObserver)
     expect(subject).toBeInstanceOf(Subject)
   })
 
@@ -25,7 +31,7 @@ describe('TransportSubject', () => {
       subscriber.next('three')
       subscriber.complete()
     })
-    const subject = new TransportSubject(source, new Subscriber())
+    const subject = new TransportSubject(source, emptyObserver)
 
     return new Promise<void>((resolve) => {
       const countFromSource = subject.pipe(count())
@@ -41,11 +47,12 @@ describe('TransportSubject', () => {
 
   test('pushes to the sink observer', () => {
     return new Promise<void>((resolve) => {
-      const sink = new Subscriber((msg) => {
-        expect(msg).toBe('test')
-        resolve()
+      const subject = new TransportSubject(new Observable(), {
+        next: (msg) => {
+          expect(msg).toBe('test')
+          resolve()
+        },
       })
-      const subject = new TransportSubject(new Observable(), sink)
       subject.next('test')
     })
   })
@@ -167,11 +174,11 @@ describe('createUnwrapOperator', () => {
 describe('createWrapObserver', () => {
   test('pushes to the sink observer', () => {
     return new Promise<void>((resolve) => {
-      const sink = new Subscriber((msg) => {
+      const next = (msg: unknown) => {
         expect(msg).toEqual({ __tw: true, ns: 'bar', msg: 'hello' })
         resolve()
-      })
-      const wrapped = createWrapObserver(sink, createWrap('bar'))
+      }
+      const wrapped = createWrapObserver({ next }, createWrap('bar'))
       wrapped.next('hello')
     })
   })
@@ -184,7 +191,7 @@ describe('createWrappedTransport', () => {
     const source = new Observable((subscriber) => {
       subscriber.next({ __tw: true, ns: 'bar', msg: 'one' })
     })
-    const subject = new TransportSubject(source, new Subscriber())
+    const subject = new TransportSubject(source, emptyObserver)
     const wrapped = createWrappedTransport(subject, wrapper)
 
     return new Promise<void>((resolve) => {
@@ -197,11 +204,11 @@ describe('createWrappedTransport', () => {
 
   test('pushes to the sink observer', () => {
     return new Promise<void>((resolve) => {
-      const sink = new Subscriber((msg) => {
+      const next = (msg: unknown) => {
         expect(msg).toEqual({ __tw: true, ns: 'bar', msg: 'hello' })
         resolve()
-      })
-      const subject = new TransportSubject(new Observable(), sink)
+      }
+      const subject = new TransportSubject(new Observable(), { next })
       const wrapped = createWrappedTransport(subject, wrapper)
       wrapped.next('hello')
     })
@@ -213,7 +220,7 @@ describe('createNamespacedTransport', () => {
     const source = new Observable((subscriber) => {
       subscriber.next({ __tw: true, ns: 'test', msg: 'one' })
     })
-    const subject = new TransportSubject(source, new Subscriber())
+    const subject = new TransportSubject(source, emptyObserver)
 
     const wrapped = createNamespacedTransport(subject as any, 'test')
     return new Promise<void>((resolve) => {
@@ -226,11 +233,11 @@ describe('createNamespacedTransport', () => {
 
   test('pushes to the sink observer', () => {
     return new Promise<void>((resolve) => {
-      const sink = new Subscriber((msg) => {
+      const next = (msg: unknown) => {
         expect(msg).toEqual({ __tw: true, ns: 'test', msg: 'hello' })
         resolve()
-      })
-      const subject = new TransportSubject(new Observable(), sink)
+      }
+      const subject = new TransportSubject(new Observable(), { next })
       const wrapped = createNamespacedTransport(subject as any, 'test')
       wrapped.next('hello')
     })

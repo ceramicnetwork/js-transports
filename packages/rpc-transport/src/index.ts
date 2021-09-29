@@ -1,3 +1,11 @@
+/**
+ * ```sh
+ * npm install @ceramicnetwork/rpc-transport
+ * ```
+ *
+ * @module rpc-transport
+ */
+
 import { TransportSubject } from '@ceramicnetwork/transport-subject'
 import { RPCClient, createHandler } from 'rpc-utils'
 import type {
@@ -8,7 +16,7 @@ import type {
   RPCResponse,
   SendRequestFunc,
 } from 'rpc-utils'
-import { pipe } from 'rxjs'
+import { firstValueFrom, pipe } from 'rxjs'
 import type { OperatorFunction, Subscription } from 'rxjs'
 import { filter, first, mergeMap } from 'rxjs/operators'
 
@@ -32,9 +40,9 @@ export function createSendRequest<Methods extends RPCMethods>(
   return async function send<K extends keyof Methods>(
     req: RPCRequest<Methods, K>
   ): Promise<RPCResponse<Methods, K>> {
-    const res = transport.pipe(first((res) => res.id === req.id)).toPromise()
+    const res = transport.pipe(first((res) => res.id === req.id))
     transport.next(req)
-    return await res
+    return await firstValueFrom(res)
   }
 }
 

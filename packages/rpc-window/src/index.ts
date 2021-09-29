@@ -1,3 +1,11 @@
+/**
+ * ```sh
+ * npm install @ceramicnetwork/rpc-window
+ * ```
+ *
+ * @module rpc-window
+ */
+
 import { createNamespaceClient, createNamespaceServer } from '@ceramicnetwork/rpc-postmessage'
 import type { HandledPayload } from '@ceramicnetwork/rpc-postmessage'
 import type { UnwrapObservableOptions, Wrapped } from '@ceramicnetwork/transport-subject'

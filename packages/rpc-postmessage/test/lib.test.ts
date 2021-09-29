@@ -1,7 +1,7 @@
 import { TransportSubject } from '@ceramicnetwork/transport-subject'
 import { createPostMessageTransport } from '@ceramicnetwork/transport-postmessage'
 import type { PostMessageTarget } from '@ceramicnetwork/transport-postmessage'
-import { Subject, Subscriber } from 'rxjs'
+import { Subject } from 'rxjs'
 
 import { createNamespaceClient, createNamespaceServer, serve } from '../src'
 
@@ -16,7 +16,7 @@ describe('direct RPC', () => {
 
       const foo = jest.fn(() => 'bar')
       const server = serve<Methods>({
-        target: ({
+        target: {
           addEventListener: jest.fn((type, listener) => {
             expect(type).toBe('message')
             listeners.push(listener)
@@ -27,7 +27,7 @@ describe('direct RPC', () => {
             server.unsubscribe()
             done()
           }),
-        } as unknown) as PostMessageTarget,
+        } as unknown as PostMessageTarget,
         methods: { foo },
       })
 
@@ -65,9 +65,8 @@ describe('namespace RPC', () => {
         data: { __tw: true, ns: 'foo', msg: { jsonrpc: '2.0', id: req.msg.id, result: true } },
       })
     })
-    const sink = new Subscriber(send)
 
-    const transport = new TransportSubject(source, sink)
+    const transport = new TransportSubject(source, { next: send })
     const client = createNamespaceClient(transport as any, 'foo', { onInvalidInput })
 
     await expect(client.request('foo')).resolves.toBe(true)
@@ -78,13 +77,13 @@ describe('namespace RPC', () => {
   describe('createNamespaceServer', () => {
     test('with origin filter', () => {
       const listeners: Array<(event: any) => void> = []
-      const target = ({
+      const target = {
         addEventListener: jest.fn((type, listener) => {
           expect(type).toBe('message')
           listeners.push(listener)
         }),
         removeEventListener: jest.fn(), // Need to be here for RxJS fromEvent detection
-      } as unknown) as PostMessageTarget
+      } as unknown as PostMessageTarget
 
       type Methods = {
         foo: { result: string }
@@ -122,13 +121,13 @@ describe('namespace RPC', () => {
 
     test('with no filter', () => {
       const listeners: Array<(event: any) => void> = []
-      const target = ({
+      const target = {
         addEventListener: jest.fn((type, listener) => {
           expect(type).toBe('message')
           listeners.push(listener)
         }),
         removeEventListener: jest.fn(), // Need to be here for RxJS fromEvent detection
-      } as unknown) as PostMessageTarget
+      } as unknown as PostMessageTarget
 
       type Methods = {
         foo: { result: string }
