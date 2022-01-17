@@ -1,8 +1,10 @@
+import { jest } from '@jest/globals'
 import { Observable, Subject } from 'rxjs'
 import { count } from 'rxjs/operators'
 
 import {
   TransportSubject,
+  type Wrapped,
   createWrap,
   createUnwrap,
   createWrapper,
@@ -217,12 +219,12 @@ describe('createWrappedTransport', () => {
 
 describe('createNamespacedTransport', () => {
   test('subscribes to the source observable', () => {
-    const source = new Observable((subscriber) => {
+    const source = new Observable<Wrapped<string>>((subscriber) => {
       subscriber.next({ __tw: true, ns: 'test', msg: 'one' })
     })
     const subject = new TransportSubject(source, emptyObserver)
 
-    const wrapped = createNamespacedTransport(subject as any, 'test')
+    const wrapped = createNamespacedTransport(subject, 'test')
     return new Promise<void>((resolve) => {
       wrapped.subscribe((msg) => {
         expect(msg).toBe('one')
@@ -233,12 +235,12 @@ describe('createNamespacedTransport', () => {
 
   test('pushes to the sink observer', () => {
     return new Promise<void>((resolve) => {
-      const next = (msg: unknown) => {
+      const next = (msg: Wrapped<string>) => {
         expect(msg).toEqual({ __tw: true, ns: 'test', msg: 'hello' })
         resolve()
       }
-      const subject = new TransportSubject(new Observable(), { next })
-      const wrapped = createNamespacedTransport(subject as any, 'test')
+      const subject = new TransportSubject<Wrapped<string>>(new Observable(), { next })
+      const wrapped = createNamespacedTransport(subject, 'test')
       wrapped.next('hello')
     })
   })

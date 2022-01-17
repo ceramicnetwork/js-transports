@@ -21,7 +21,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 ___
 
@@ -47,15 +47,15 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `namespace` | `Namespace` |
-| `target` | `Window` |
-| `options` | [`ClientOptions`](rpc_window.md#clientoptions) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `namespace` | `Namespace` | `undefined` |
+| `target` | `Window` | `window` |
+| `options` | [`ClientOptions`](rpc_window.md#clientoptions) | `DEFAULT_OPTIONS` |
 
 #### Returns
 
@@ -72,15 +72,15 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `namespace` | `Namespace` |
-| `methods` | `HandlerMethods`<[`IncomingRequest`](rpc_window.md#incomingrequest)<`Methods`, `Namespace`\>, `Methods`\> |
-| `target` | `Window` |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `namespace` | `Namespace` | `undefined` |
+| `methods` | `HandlerMethods`<[`IncomingRequest`](rpc_window.md#incomingrequest)<`Methods`, `Namespace`\>, `Methods`\> | `undefined` |
+| `target` | `Window` | `window` |
 
 #### Returns
 

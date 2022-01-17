@@ -32,7 +32,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Message` | `Message` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Type declaration
 
@@ -75,7 +75,7 @@ ___
 | :------ | :------ |
 | `MsgIn` | `MsgIn` |
 | `MsgOut` | `MsgIn` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 
@@ -100,7 +100,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `MsgIn` | `MsgIn` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 
@@ -159,7 +159,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `MsgOut` | `MsgOut` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 
@@ -246,7 +246,7 @@ ___
 | :------ | :------ |
 | `MsgIn` | `MsgIn` |
 | `MsgOut` | `MsgIn` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 

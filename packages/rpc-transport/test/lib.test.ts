@@ -1,18 +1,25 @@
 import { TransportSubject } from '@ceramicnetwork/transport-subject'
+import { jest } from '@jest/globals'
 import type { RPCRequest, RPCResponse } from 'rpc-utils'
-import { Observable, Subject, Subscriber } from 'rxjs'
+import { Observable, Subject } from 'rxjs'
 
 import { createClient, createSendRequest, serve } from '../src'
 
 test('createSendRequest', async () => {
+  type Methods = {
+    test: { result: boolean }
+  }
   const expectedResponse = { jsonrpc: '2.0', id: 3, result: true }
 
-  const source = new Observable((subscriber) => {
-    subscriber.next({ jsonrpc: '2.0', id: 1 })
-    subscriber.next({ jsonrpc: '2.0', id: 2 })
+  const source = new Observable<RPCResponse<Methods, keyof Methods>>((subscriber) => {
+    subscriber.next({ jsonrpc: '2.0', id: 1, result: false })
+    subscriber.next({ jsonrpc: '2.0', id: 2, result: false })
     subscriber.next(expectedResponse)
   })
-  const transport = new TransportSubject<any, any>(source, new Subscriber())
+  const transport = new TransportSubject<
+    RPCResponse<Methods, keyof Methods>,
+    RPCRequest<Methods, keyof Methods>
+  >(source, { next: jest.fn() })
 
   const send = createSendRequest(transport)
   await expect(send({ jsonrpc: '2.0', id: 3, method: 'test', params: undefined })).resolves.toEqual(

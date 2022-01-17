@@ -41,7 +41,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `filter?` | `string` \| `string`[] \| [`MessageFilter`](transport_postmessage.md#messagefilter) |
-| `postMessageArguments?` | `any`[] |
+| `postMessageArguments?` | `unknown`[] |
 
 ## Functions
 
@@ -117,7 +117,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `target` | [`PostMessageTarget`](../interfaces/transport_postmessage.PostMessageTarget.md) |
-| `...args` | `any`[] |
+| `...args` | `unknown`[] |
 
 #### Returns
 
@@ -127,7 +127,7 @@ ___
 
 ### createPostMessageTransport
 
-▸ **createPostMessageTransport**<`MsgIn`, `MsgOut`\>(`from`, `to?`, `__namedParameters?`): `TransportSubject`<[`IncomingMessage`](../interfaces/transport_postmessage.IncomingMessage.md)<`MsgIn`\>, `MsgOut`\>
+▸ **createPostMessageTransport**<`MsgIn`, `MsgOut`\>(`from`, `to?`, `options?`): `TransportSubject`<[`IncomingMessage`](../interfaces/transport_postmessage.IncomingMessage.md)<`MsgIn`\>, `MsgOut`\>
 
 #### Type parameters
 
@@ -138,11 +138,11 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `from` | [`PostMessageTarget`](../interfaces/transport_postmessage.PostMessageTarget.md) |
-| `to` | [`PostMessageTarget`](../interfaces/transport_postmessage.PostMessageTarget.md) |
-| `__namedParameters` | [`PostMessageTransportOptions`](transport_postmessage.md#postmessagetransportoptions) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `from` | [`PostMessageTarget`](../interfaces/transport_postmessage.PostMessageTarget.md) | `undefined` |
+| `to` | [`PostMessageTarget`](../interfaces/transport_postmessage.PostMessageTarget.md) | `from` |
+| `options` | [`PostMessageTransportOptions`](transport_postmessage.md#postmessagetransportoptions) | `{}` |
 
 #### Returns
 

@@ -1,9 +1,14 @@
 import { TransportSubject } from '@ceramicnetwork/transport-subject'
+import type { Wrapped } from '@ceramicnetwork/transport-subject'
 import { createPostMessageTransport } from '@ceramicnetwork/transport-postmessage'
-import type { PostMessageTarget } from '@ceramicnetwork/transport-postmessage'
+import type { IncomingMessage, PostMessageTarget } from '@ceramicnetwork/transport-postmessage'
+import { jest } from '@jest/globals'
+import type { RPCRequest, RPCResponse } from 'rpc-utils'
 import { Subject } from 'rxjs'
 
 import { createNamespaceClient, createNamespaceServer, serve } from '../src'
+
+type Listener = (event: unknown) => void
 
 describe('direct RPC', () => {
   test('serve', () => {
@@ -12,12 +17,12 @@ describe('direct RPC', () => {
     }
 
     return new Promise<void>((done) => {
-      const listeners: Array<(event: any) => void> = []
+      const listeners: Array<Listener> = []
 
       const foo = jest.fn(() => 'bar')
       const server = serve<Methods>({
         target: {
-          addEventListener: jest.fn((type, listener) => {
+          addEventListener: jest.fn((type, listener: Listener) => {
             expect(type).toBe('message')
             listeners.push(listener)
           }),
@@ -45,10 +50,16 @@ describe('direct RPC', () => {
 
 describe('namespace RPC', () => {
   test('createNamespaceClient', async () => {
-    const onInvalidInput = jest.fn()
-    const source = new Subject()
+    type Methods = {
+      foo: { result: boolean | string }
+    }
+    type MsgReq = Wrapped<RPCRequest<Methods, keyof Methods>>
+    type MsgRes = IncomingMessage<Wrapped<RPCResponse<Methods, keyof Methods>>>
 
-    const send = jest.fn((req) => {
+    const onInvalidInput = jest.fn()
+    const source = new Subject<MsgRes>()
+
+    const send = jest.fn((req: MsgReq) => {
       expect(req).toEqual({
         __tw: true,
         ns: 'foo',
@@ -58,16 +69,16 @@ describe('namespace RPC', () => {
 
       source.next({
         data: { __tw: true, ns: 'test', msg: { jsonrpc: '2.0', id: 1, result: 'foo' } },
-      })
+      } as unknown as MsgRes)
+      // @ts-expect-error empty object
       source.next({})
       source.next({
-        // eslint-disable-next-line
         data: { __tw: true, ns: 'foo', msg: { jsonrpc: '2.0', id: req.msg.id, result: true } },
-      })
+      } as unknown as MsgRes)
     })
 
     const transport = new TransportSubject(source, { next: send })
-    const client = createNamespaceClient(transport as any, 'foo', { onInvalidInput })
+    const client = createNamespaceClient(transport, 'foo', { onInvalidInput })
 
     await expect(client.request('foo')).resolves.toBe(true)
     expect(send).toBeCalled()
@@ -76,9 +87,9 @@ describe('namespace RPC', () => {
 
   describe('createNamespaceServer', () => {
     test('with origin filter', () => {
-      const listeners: Array<(event: any) => void> = []
+      const listeners: Array<Listener> = []
       const target = {
-        addEventListener: jest.fn((type, listener) => {
+        addEventListener: jest.fn((type, listener: Listener) => {
           expect(type).toBe('message')
           listeners.push(listener)
         }),
@@ -120,9 +131,9 @@ describe('namespace RPC', () => {
     })
 
     test('with no filter', () => {
-      const listeners: Array<(event: any) => void> = []
+      const listeners: Array<Listener> = []
       const target = {
-        addEventListener: jest.fn((type, listener) => {
+        addEventListener: jest.fn((type, listener: Listener) => {
           expect(type).toBe('message')
           listeners.push(listener)
         }),
@@ -175,8 +186,11 @@ describe('namespace RPC', () => {
       namespace: 'test',
     }).subscribe()
 
-    const transport = createPostMessageTransport(window, window, { postMessageArguments: ['*'] })
-    const client = createNamespaceClient(transport as any, 'test')
+    const transport = createPostMessageTransport<
+      Wrapped<RPCResponse<Methods, keyof Methods>>,
+      Wrapped<RPCRequest<Methods, keyof Methods>>
+    >(window, window, { postMessageArguments: ['*'] })
+    const client = createNamespaceClient(transport, 'test')
 
     await expect(client.request('foo')).resolves.toBe('bar')
     server.unsubscribe()

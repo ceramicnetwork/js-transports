@@ -53,7 +53,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 | `Message` | `IncomingMessage`<`Wrapped`<`RPCRequest`<`Methods`, keyof `Methods`\>, `Namespace`\>\> |
 
 ___
@@ -102,7 +102,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 
@@ -127,7 +127,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 | `Message` | `IncomingMessage`<`Wrapped`<`RPCRequest`<`Methods`, keyof `Methods`\>, `Namespace`\>\> |
 
 #### Parameters
@@ -153,7 +153,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 
 #### Parameters
 
@@ -178,7 +178,7 @@ ___
 | Name | Type |
 | :------ | :------ |
 | `Methods` | extends `RPCMethods` |
-| `Namespace` | extends `string``string` |
+| `Namespace` | extends `string` = `string` |
 | `Request` | `Wrapped`<`RPCRequest`<`Methods`, keyof `Methods`\>, `Namespace`\> |
 
 #### Parameters
