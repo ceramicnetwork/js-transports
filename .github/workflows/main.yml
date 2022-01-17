@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ['14.x', '16.x']
+        node: ['16.x']
         os: [ubuntu-latest, macOS-latest]
 
     steps:
@@ -26,4 +26,4 @@ jobs:
         run: yarn lint
 
       - name: Test
-        run: yarn test --ci --coverage
+        run: yarn test:ci

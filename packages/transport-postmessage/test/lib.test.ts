@@ -1,10 +1,12 @@
+import { jest } from '@jest/globals'
+
 import {
+  type PostMessageTarget,
   createOriginFilter,
   createMessageObservable,
   createPostMessageObserver,
   createPostMessageTransport,
 } from '../src'
-import type { PostMessageTarget } from '../src'
 
 describe('createOriginFilter', () => {
   test('with a single origin', () => {
@@ -113,7 +115,7 @@ describe('createMessageObservable', () => {
 describe('createPostMessageObserver', () => {
   test('with no extra argument', () => {
     const postMessage = jest.fn()
-    const observer = createPostMessageObserver({ postMessage } as any)
+    const observer = createPostMessageObserver({ postMessage } as unknown as PostMessageTarget)
     observer.next('foo')
     expect(postMessage).toBeCalledWith('foo')
     observer.next(null)
@@ -123,7 +125,11 @@ describe('createPostMessageObserver', () => {
 
   test('with extra arguments', () => {
     const postMessage = jest.fn()
-    const observer = createPostMessageObserver({ postMessage } as any, 'one', 'two')
+    const observer = createPostMessageObserver(
+      { postMessage } as unknown as PostMessageTarget,
+      'one',
+      'two'
+    )
     observer.next('foo')
     expect(postMessage).toBeCalledWith('foo', 'one', 'two')
   })

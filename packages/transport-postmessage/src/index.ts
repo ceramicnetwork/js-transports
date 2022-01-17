@@ -74,7 +74,7 @@ export function createMessageObservable<MessageData = any>(
 
 export function createPostMessageObserver<MessageData = any>(
   target: PostMessageTarget,
-  ...args: Array<any>
+  ...args: Array<unknown>
 ): NextObserver<MessageData> {
   return {
     next: (message: MessageData) => {
@@ -87,15 +87,16 @@ export function createPostMessageObserver<MessageData = any>(
 
 export type PostMessageTransportOptions = {
   filter?: string | Array<string> | MessageFilter
-  postMessageArguments?: Array<any>
+  postMessageArguments?: Array<unknown>
 }
 
 export function createPostMessageTransport<MsgIn, MsgOut = MsgIn>(
   from: PostMessageTarget,
   to: PostMessageTarget = from,
-  { filter, postMessageArguments = [] }: PostMessageTransportOptions = {}
+  options: PostMessageTransportOptions = {}
 ): TransportSubject<IncomingMessage<MsgIn>, MsgOut> {
-  const source = createMessageObservable<MsgIn>(from, filter)
+  const postMessageArguments = options.postMessageArguments ?? []
+  const source = createMessageObservable<MsgIn>(from, options.filter)
   const sink = createPostMessageObserver<MsgOut>(to, ...postMessageArguments)
   return new TransportSubject(source, sink)
 }
