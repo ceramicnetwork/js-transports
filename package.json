@@ -36,15 +36,5 @@
     "projects": [
       "<rootDir>/packages/*"
     ]
-  },
-  "turbo": {
-    "baseBranch": "origin/main",
-    "pipeline": {
-      "build:clean": {},
-      "build:js": {},
-      "lint": {},
-      "test": {},
-      "test:ci": {}
-    }
   }
 }

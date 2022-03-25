@@ -1,6 +1,6 @@
 {
   "name": "@ceramicnetwork/rpc-postmessage",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "3Box Labs",
   "license": "(Apache-2.0 OR MIT)",
   "homepage": "https://github.com/ceramicnetwork/js-transports#readme",
@@ -23,7 +23,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=14.14"
   },
   "sideEffects": false,
   "scripts": {
